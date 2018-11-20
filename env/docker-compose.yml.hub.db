@@ -1,0 +1,54 @@
+version: "2"
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    restart: always
+    volumes:
+      - ./services/mysql/conf.d:/etc/mysql/conf.d
+      - ./services/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ../data/mysql/db:/var/lib/mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=myzero1&735
+      - MYSQL_DATABASE=yii2advanced
+    networks:
+      - code-network
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/data/logs
+    volumes:
+      - ../data/mongodb/db:/data/db
+      - ../data/mongodb/logs:/data/logs
+      - ./services/mongodb/example_db:/data/example_db
+    networks:
+      - code-network
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    environment:
+        REDIS_PASS_FILE: /run/secrets/redis-password
+    command: [
+      "bash", "-c",
+      '
+       docker-entrypoint.sh
+       --requirepass "$$(cat $$REDIS_PASS_FILE)"
+      '
+    ]
+    volumes:
+      - ./services/redis/etc/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./services/redis/etc/redis-password:/run/secrets/redis-password
+      - ../data/redis/data:/data
+    networks:
+      - code-network
+networks:
+  code-network:
+    driver: bridge
