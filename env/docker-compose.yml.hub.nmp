@@ -40,6 +40,13 @@ services:
       - code-network
   sshd:
     image: rastasheep/ubuntu-sshd:18.04
+    ports:
+      - "3000:3000"
+      - "35711:35711"
+      - "35721:35721"
+      - "35731:35731"
+      - "35741:35741"
+      - "35751:35751"
     volumes:
       - ~/.docker/docker-workspace/docker-envs/app:/home/app
     networks:
