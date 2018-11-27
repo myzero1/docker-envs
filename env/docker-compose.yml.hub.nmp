@@ -38,6 +38,12 @@ services:
       - mysql
     networks:
       - code-network
+  sshd:
+    image: rastasheep/ubuntu-sshd:18.04
+    volumes:
+      - ~/.docker/docker-workspace/docker-envs/app:/home/app
+    networks:
+      - code-network
 networks:
   code-network:
     driver: bridge
