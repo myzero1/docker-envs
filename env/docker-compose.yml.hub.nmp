@@ -6,9 +6,9 @@ services:
       - "80:80"
     restart: always
     volumes:
-      - ../app:/www/web
-      - /var/docker-worspace/docker-envs/env/services/web/nginx/conf:/etc/nginx
-      - /var/docker-worspace/docker-envs/data/web/nginx/web_logs:/www/web_logs
+      - ~/.docker/docker-workspace/docker-envs/app:/www/web
+      - /var/lib/boot2docker/docker-worspace/docker-envs/env/services/web/nginx/conf:/etc/nginx
+      - /var/lib/boot2docker/docker-worspace/docker-envs/data/web/nginx/web_logs:/www/web_logs
     networks:
       - code-network
     depends_on:
@@ -19,9 +19,9 @@ services:
       - "3306:3306"
     restart: always
     volumes:
-      - /var/docker-worspace/docker-envs/env/services/mysql/conf.d:/etc/mysql/conf.d
-      - /var/docker-worspace/docker-envs/env/services/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-      - /var/docker-worspace/docker-envs/data/mysql/data:/var/lib/mysql
+      - /var/lib/boot2docker/docker-worspace/docker-envs/env/services/mysql/conf.d:/etc/mysql/conf.d
+      - /var/lib/boot2docker/docker-worspace/docker-envs/env/services/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - /var/lib/boot2docker/docker-worspace/docker-envs/data/mysql/data:/var/lib/mysql
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=myzero1&735
@@ -32,8 +32,8 @@ services:
     image: fecshop/php-fpm-7.1.13
     restart: always
     volumes:
-      - ../app:/www/web
-      - /var/docker-worspace/docker-envs/env/services/php/etc/php7.1.13.ini:/usr/local/etc/php/conf.d/php7.1.13.ini
+      - ~/.docker/docker-workspace/docker-envs/app:/www/web
+      - /var/lib/boot2docker/docker-worspace/docker-envs/env/services/php/etc/php7.1.13.ini:/usr/local/etc/php/conf.d/php7.1.13.ini
     depends_on:
       - mysql
     networks:

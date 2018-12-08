@@ -1,0 +1,157 @@
+version: "2"
+services:
+  ndbm:
+    container_name: ndbm
+    image: "mysql/mysql-cluster"
+    entrypoint: /entrypoint.sh ndb_mgmd
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./services/mysql-cluster/cnf/mysql-cluster.cnf:/etc/mysql-cluster.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=defaultpass
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.2
+  ndbd1:
+    container_name: ndb1
+    image: "mysql/mysql-cluster"
+    entrypoint: /entrypoint.sh ndbd
+    ports:
+      - "33306:3306"
+    volumes:
+      - ./services/mysql-cluster/cnf/my.cnf:/etc/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=defaultpass
+    depends_on:
+      - ndbm
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.3
+  ndbd2:
+    container_name: ndb2
+    image: "mysql/mysql-cluster"
+    entrypoint: /entrypoint.sh ndbd
+    ports:
+      - "33307:3306"
+    volumes:
+      - ./services/mysql-cluster/cnf/my.cnf:/etc/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=defaultpass
+    depends_on:
+      - ndbm
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.4
+  ndbd3:
+    container_name: ndb3
+    image: "mysql/mysql-cluster"
+    entrypoint: /entrypoint.sh ndbd
+    ports:
+      - "33308:3306"
+    volumes:
+      - ./services/mysql-cluster/cnf/my.cnf:/etc/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=defaultpass
+    depends_on:
+      - ndbm
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.5
+  ndbd4:
+    container_name: ndb4
+    image: "mysql/mysql-cluster"
+    entrypoint: /entrypoint.sh ndbd
+    ports:
+      - "33309:3306"
+    volumes:
+      - ./services/mysql-cluster/cnf/my.cnf:/etc/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=defaultpass
+    depends_on:
+      - ndbm
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.6
+  mysql1:
+    container_name: mysql1
+    image: "mysql/mysql-cluster"
+    entrypoint: /entrypoint.sh mysqld
+    ports:
+      - "23306:3306"
+    volumes:
+      - ./services/mysql-cluster/cnf/my.cnf:/etc/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=defaultpass
+    depends_on:
+      - ndbm
+      - ndbd1
+      - ndbd2
+      - ndbd3
+      - ndbd4
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.11
+  mysql2:
+    container_name: mysql2
+    image: "mysql/mysql-cluster"
+    entrypoint: /entrypoint.sh mysqld
+    ports:
+      - "23306:3306"
+    volumes:
+      - ./services/mysql-cluster/cnf/my.cnf:/etc/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=defaultpass
+    depends_on:
+      - ndbm
+      - ndbd1
+      - ndbd2
+      - ndbd3
+      - ndbd4
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.12
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/data/logs
+    volumes:
+      - ../data/mongodb/db:/data/db
+      - ../data/mongodb/logs:/data/logs
+      - ./services/mongodb/example_db:/data/example_db
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.111
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    environment:
+        REDIS_PASS_FILE: /run/secrets/redis-password
+    command: [
+      "bash", "-c",
+      '
+       docker-entrypoint.sh
+       --requirepass "$$(cat $$REDIS_PASS_FILE)"
+      '
+    ]
+    volumes:
+      - ./services/redis/etc/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./services/redis/etc/redis-password:/run/secrets/redis-password
+      - ../data/redis/data:/data
+    networks:
+      cluster:
+        ipv4_address: 192.168.0.151
+networks:
+  cluster:
+    driver: bridge
+    enable_ipv6: false
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.0.0/16
